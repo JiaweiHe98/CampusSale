@@ -1,0 +1,22 @@
+.header {
+  position: sticky;
+  top: 0;
+}
+
+.header .paper {
+  padding-right: calc(1rem + 5%);
+  padding-left: calc(1rem + 5%);
+}
+
+.header a {
+  color: #191b26;
+  margin-left: 1rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.header a:hover {
+  color: #0069c2;
+  background-color: #0085f230;
+}

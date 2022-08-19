@@ -1,0 +1,17 @@
+/* .scroll-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+}
+
+.scroll-area {
+  scroll-snap-align: center;
+} */
+
+/* .app {
+  height: 100vh;
+  width: 100vw;
+} */
+
+.txtPassword input{
+    -webkit-text-security:disc;
+}
