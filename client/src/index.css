@@ -1,69 +1,79 @@
 body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  background-image: url('./assets/bg.png');
-  background-color: #f8fafc;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-image: url('./assets/bg.png');
+    background-color: #f8fafc;
 
-  /* line-height: 1.75; */
+    /* line-height: 1.75; */
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
 :root {
-  --code-color: darkred;
-  --code-bg-color: #aaaaaa;
-  --code-font-size: 14px;
-  --code-line-height: 1.4;
-  --scroll-bar-color: #c5c5c5;
-  --scroll-bar-bg-color: #f6f6f6;
+    --code-color: darkred;
+    --code-bg-color: #aaaaaa;
+    --code-font-size: 14px;
+    --code-line-height: 1.4;
+    --scroll-bar-color: #c5c5c5;
+    --scroll-bar-bg-color: #f6f6f6;
 }
 
 pre {
-  color: var(--code-color);
-  font-size: var(--code-font-size);
-  line-height: var(--code-line-height);
-  background-color: var(--code-bg-color);
+    color: var(--code-color);
+    font-size: var(--code-font-size);
+    line-height: var(--code-line-height);
+    background-color: var(--code-bg-color);
 }
 
 .code-block {
-  max-height: 100px;
-  overflow: auto;
-  padding: 8px 7px 5px 15px;
-  margin: 0px 0px 0px 0px;
-  border-radius: 7px;
+    max-height: 100px;
+    overflow: auto;
+    padding: 8px 7px 5px 15px;
+    margin: 0px 0px 0px 0px;
+    border-radius: 7px;
 }
 
 ::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
 }
 
 * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-bar-color) var(--scroll-bar-bg-color);
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-bar-color) var(--scroll-bar-bg-color);
 }
 
 /* Works on Chrome, Edge, and Safari */
 *::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+    width: 12px;
+    height: 12px;
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--scroll-bar-bg-color);
+    background: var(--scroll-bar-bg-color);
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: var(--scroll-bar-color);
-  border-radius: 20px;
-  border: 3px solid var(--scroll-bar-bg-color);
+    background-color: var(--scroll-bar-color);
+    border-radius: 20px;
+    border: 3px solid var(--scroll-bar-bg-color);
+}
+
+/*#card-image {*/
+/*  object-fit: contain;*/
+/*}*/
+
+#about-container {
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(48, 46, 56, 0.1) 0px 10px 100px 0px;
+    background-color: rgba(255, 255, 255, .15);
+    backdrop-filter: blur(5px);
 }

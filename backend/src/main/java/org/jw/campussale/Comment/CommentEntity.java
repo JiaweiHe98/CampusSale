@@ -1,5 +1,6 @@
 package org.jw.campussale.Comment;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class CommentEntity {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     private PostEntity postEntity;
 
     @OneToMany(cascade = CascadeType.ALL)

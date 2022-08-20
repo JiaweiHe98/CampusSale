@@ -28,7 +28,7 @@ const SignUp = () => {
                 'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(48, 46, 56, 0.06) 0px 3px 10px 0px',
             }}
           >
-            <Stepper></Stepper>
+            <Stepper />
           </Paper>
         </Container>
       </Box>

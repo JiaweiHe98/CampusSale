@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import {TextField, Checkbox, FormControlLabel} from '@mui/material';
 import {existsEmail, existsUsername, signUp} from "../util/signUp";
 import {useNavigate} from "react-router-dom";
+import BasicModal from "./BasicModal";
 
 const steps = [
   {
@@ -24,6 +25,8 @@ const steps = [
 ];
 
 export default function VerticalLinearStepper() {
+  const [open, setOpen] = React.useState(false);
+
   const [username, setUsername] = useState({value: '', valid: true, exists: false});
   const [password, setPassword] = useState({value: '', valid: true});
   const [confirmPassword, setConfirmPassword] = useState({
@@ -82,6 +85,9 @@ export default function VerticalLinearStepper() {
       firstname.value !== '' && lastname.value !== '' && email.value !== '';
     return valid && notEmpty && !email.exists;
   })();
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const handleUsername = (e) => {
     const userInput = e.target.value;
@@ -192,17 +198,21 @@ export default function VerticalLinearStepper() {
     const res = await signUp(appUser);
     if (res.status === 201) {
       navigate("/login")
+      return true
     } else {
-      alert("Sign up fail!")
+      handleOpen()
+      return false
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (activeStep === 2) {
-      handleFinish();
-    } else {
-      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      const res = await handleFinish();
+      if (res) {
+        return
+      }
     }
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
   const handleBack = () => {
@@ -310,63 +320,68 @@ export default function VerticalLinearStepper() {
   );
 
   return (
-    <Box>
-      <Typography variant="h4" sx={{pl: '2rem'}}>
-        Sign Up
-      </Typography>
-      <Stepper activeStep={activeStep} orientation="vertical">
-        {steps.map((step, index) => (
-          <Step key={step.label}>
-            <StepLabel
-              optional={
-                index === 2 ? (
-                  <Typography variant="caption">Last step</Typography>
-                ) : null
-              }
-            >
-              {step.label}
-            </StepLabel>
-            <StepContent>
-              {index === 0 && step1}
-              {index === 1 && step2}
-              {index === 2 && step3}
-              <Box sx={{mb: 2}}>
-                <div>
-                  <Button
-                    variant="contained"
-                    onClick={handleNext}
-                    sx={{mt: 1, mr: 1}}
-                    disabled={
-                      !(index === 0
-                        ? step1Valid
-                        : index === 1
-                          ? step2Valid
-                          : agree)
-                    }
-                  >
-                    {index === steps.length - 1 ? 'Finish' : 'Continue'}
-                  </Button>
-                  <Button
-                    disabled={index === 0}
-                    onClick={handleBack}
-                    sx={{mt: 1, mr: 1}}
-                  >
-                    Back
-                  </Button>
-                </div>
-              </Box>
-            </StepContent>
-          </Step>
-        ))}
-      </Stepper>
-      {activeStep === steps.length && (
-        <Paper square elevation={0} sx={{p: 3}}>
-          <Typography>All steps completed - you&apos;re finished</Typography>
-          <Button onClick={handleReset} sx={{mt: 1, mr: 1}}>
-            Reset
-          </Button>
-        </Paper>
-      )}
-    </Box>
+    <>
+      <BasicModal open={open} handleClose={handleClose} messageTitle={'Sign failed!'}
+                  message={'Please check your information format and internet connection before retry!.'} buttonTitle={'OK'}/>
+      <Box>
+        <Typography variant="h4" sx={{pl: '2rem'}}>
+          Sign Up
+        </Typography>
+        <Stepper activeStep={activeStep} orientation="vertical">
+          {steps.map((step, index) => (
+            <Step key={step.label}>
+              <StepLabel
+                optional={
+                  index === 2 ? (
+                    <Typography variant="caption">Last step</Typography>
+                  ) : null
+                }
+              >
+                {step.label}
+              </StepLabel>
+              <StepContent>
+                {index === 0 && step1}
+                {index === 1 && step2}
+                {index === 2 && step3}
+                <Box sx={{mb: 2}}>
+                  <div>
+                    <Button
+                      variant="contained"
+                      onClick={handleNext}
+                      sx={{mt: 1, mr: 1}}
+                      disabled={
+                        !(index === 0
+                          ? step1Valid
+                          : index === 1
+                            ? step2Valid
+                            : agree)
+                      }
+                    >
+                      {index === steps.length - 1 ? 'Finish' : 'Continue'}
+                    </Button>
+                    <Button
+                      disabled={index === 0}
+                      onClick={handleBack}
+                      sx={{mt: 1, mr: 1}}
+                    >
+                      Back
+                    </Button>
+                  </div>
+                </Box>
+              </StepContent>
+            </Step>
+          ))}
+        </Stepper>
+        {activeStep === steps.length && (
+          <Paper square elevation={0} sx={{p: 3}}>
+            <Typography>All steps completed - you&apos;re finished</Typography>
+            <Button onClick={handleReset} sx={{mt: 1, mr: 1}}>
+              Reset
+            </Button>
+          </Paper>
+        )}
+      </Box>
+    </>
+
   );
 }

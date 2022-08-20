@@ -41,11 +41,11 @@ public class SignUpServiceImpl implements SignUpService {
         toSave.setPhoneNumber(appUserEntity.getPhoneNumber());
 
         RoleEntity roleEntity = roleService.getByRoleType(RoleType.USER);
-        roleEntity.setRoleType(RoleType.USER);
         toSave.getRoleEntities().add(roleEntity);
-
         toSave.setRegisteredTime(new Date());
+        AppUserEntity saved =  superUserService.saveUser(toSave);
+        roleEntity.getUsers().add(saved);
 
-        return superUserService.saveUser(toSave);
+        return saved;
     }
 }

@@ -1,5 +1,6 @@
 package org.jw.campussale.Role;
 
+import org.jw.campussale.AppUser.AppUserEntity;
 import org.jw.campussale.enums.RoleType;
 
 public interface RoleService {
@@ -8,5 +9,5 @@ public interface RoleService {
 
     RoleEntity getByRoleType(RoleType roleType);
 
-
+    void addUserToRole(RoleType roleType, AppUserEntity appUserEntity);
 }

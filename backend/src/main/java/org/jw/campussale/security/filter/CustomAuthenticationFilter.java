@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jw.campussale.AppUser.AppUserEntity;
 import org.jw.campussale.AppUser.UserService;
 import org.jw.campussale.security.PrivateKey;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,6 +46,12 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
         log.info("Attempt to login {} {}", username, password);
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+
+        try {
+            userService.getUser(username);
+        } catch (Exception e) {
+            return null;
+        }
 
         return authenticationManager.authenticate(authenticationToken);
     }

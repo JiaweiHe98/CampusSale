@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Box,
   Card,
@@ -7,35 +7,53 @@ import {
   CardContent,
   Typography,
   CardActions,
-  IconButton,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import { alpha } from '@mui/material/styles';
+import {alpha} from '@mui/material/styles';
+import {url} from '../util/url'
 
 import './PostCard.css';
+import {useNavigate} from "react-router-dom";
 
 const PostCard = ({
-  category,
-  username,
-  title,
-  description,
-  price,
-  image,
-  postedTime,
-}) => {
+                    category,
+                    username,
+                    title,
+                    description,
+                    price,
+                    image,
+                    postedTime,
+                    setToCurrentPostId,
+                    setToCurrentUserId,
+                  }) => {
+
+  const navigate = useNavigate();
+
+  const onClickHandler = (e, clickLocation) => {
+    if (clickLocation === 'card') {
+      setToCurrentPostId();
+      navigate('/post');
+    } else if (clickLocation === 'user') {
+      setToCurrentUserId();
+      navigate('/profile');
+      e.stopPropagation();
+    }
+  }
+
   if (!image) {
-    image = 'noImage.png';
+      image = `${url}/api/post/image/noImage.png`;
+  } else {
+    image = `${url}/api/post/image/${image}`;
   }
 
   return (
     <Card
+      onClick={(e) => onClickHandler(e, 'card')}
       className="post-card"
       sx={{
-        minWidth: 245,
-        maxWidth: 445,
+        width: 345,
+        maxWidth: 345,
         flexGrow: 1,
         height: 480,
         display: 'flex',
@@ -43,9 +61,18 @@ const PostCard = ({
         m: '1rem',
         border: 'none',
         borderRadius: '8px',
+        cursor: 'pointer',
+        zIndex: 1,
+        "&:hover": {
+          transition: 'all 0.2s ease-out',
+          transform: 'scale(1.006, 1.006)',
+          boxShadow:
+            'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(48, 46, 56, 0.1) 0px 10px 100px 0px',
+        },
         boxShadow:
           'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(48, 46, 56, 0.06) 0px 3px 10px 0px',
-      }}
+      }
+      }
     >
       <CardHeader
         className="post-card-header"
@@ -69,10 +96,10 @@ const PostCard = ({
           paddingTop: '0.5rem',
         }}
       >
-        <Box sx={{ color: 'primary.main' }}>{price}</Box>
+        <Box sx={{color: 'primary.main'}}>${price}</Box>
         <Box>{category}</Box>
       </Box>
-      <CardContent sx={{ paddingTop: '0.5rem' }}>
+      <CardContent sx={{paddingTop: '0.5rem'}}>
         <Typography
           variant="body2"
           color="text.secondary"
@@ -81,19 +108,18 @@ const PostCard = ({
           {description}
         </Typography>
       </CardContent>
-      <Box sx={{ flexGrow: 1 }} />
+      <Box sx={{flexGrow: 1}}/>
       <CardActions
         disableSpacing
-        sx={{ display: 'flex', alignItems: 'center' }}
+        sx={{display: 'flex', alignItems: 'center'}}
       >
-        <IconButton aria-label="add to favorites">
-          <FavoriteIcon />
-        </IconButton>
-        <IconButton aria-label="share">
-          <ShareIcon />
-        </IconButton>
-        <Box sx={{ flexGrow: 1 }} />
+        {/*<FavoriteIcon/>*/}
+        {/*<ShareIcon/>*/}
+        <Box sx={{flexGrow: 1}}/>
         <Box
+          onClick={(e) => {
+            onClickHandler(e, 'user')
+          }}
           sx={{
             p: 0.5,
             backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
@@ -107,9 +133,14 @@ const PostCard = ({
               fontSize: 21,
               mr: 0.5,
             },
+            "&:hover": {
+              p: '0.5rem',
+              transform: 'scale(1.1, 1.1)',
+              borderRadius: '20px'
+            },
           }}
         >
-          <PersonOutlineIcon />
+          <PersonOutlineIcon/>
           {username}
         </Box>
       </CardActions>

@@ -15,7 +15,12 @@ const navAnchors = [
     redirect: false,
   },
   {
-    href: '/feedback',
+    href: '/profile',
+    content: 'profile',
+    redirect: false,
+  },
+  {
+    href: 'https://airtable.com/shrXzeo7bWFUxgddg',
     content: 'feedback',
     redirect: true,
   },
@@ -27,6 +32,11 @@ const navAnchors = [
   {
     href: '/login',
     content: 'login',
+    redirect: false,
+  },
+  {
+    href: '/',
+    content: 'logout',
     redirect: false,
   },
 ];

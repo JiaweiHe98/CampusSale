@@ -1,7 +1,11 @@
 package org.jw.campussale.Post;
 
 
+import java.util.List;
+
 public interface PostService {
+
+    List<PostEntity> findPosts();
 
     PostEntity getPostById(Long postId);
 

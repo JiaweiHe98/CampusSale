@@ -24,8 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -38,7 +36,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final CommentService commentService;
     private final PasswordEncoder passwordEncoder;
     private final StorageService storageService;
-    private final String basePath = "./images";
     private final String baseUrl = "";
 
     private void checkTokenUser(String username, String tokenUsername) {
@@ -50,6 +47,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public boolean checkExistsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public void logout(String username) {
+        AppUserEntity appUserEntity = getUser(username);
+        appUserEntity.setToken(null);
     }
 
     public void runtimeExceptionIfExistsByUsername(String username, String methodName) {
@@ -172,6 +175,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public PostEntity addAPost(Long userId, PostMessageText postMessageText, MultipartFile[] images, String tokenUsername) {
         AppUserEntity appUserEntity = getUserById(userId);
 
+        log.info("Trying to add a post userId {} tokenUsername {}", userId, tokenUsername);
+
         checkTokenUser(appUserEntity.getUsername(), tokenUsername);
 
         PostEntity postEntity = new PostEntity();
@@ -186,33 +191,37 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         String postIdStr = "" + postEntity.getId();
         List<ImageLocationEntity> imageList = postEntity.getImages();
 
-        for (int i = 0; i < images.length; i++) {
-            // image must be png or jpg
-            String originalImageName = images[i].getOriginalFilename();
-            if (originalImageName == null) {
-                throw new RuntimeException("At least one image name is null");
-            }
-
-            try {
-                Path path;
-                String fileName;
-                ImageLocationEntity imageLocationEntity = new ImageLocationEntity();
-                if (originalImageName.endsWith(".jpg")) {
-                    fileName = postIdStr + "_" + i + ".jpg";
-                } else if (originalImageName.endsWith(".png")) {
-                    fileName = postIdStr + "_" + i + ".png";
-                } else {
-                    throw new RuntimeException();
+        if (images != null) {
+            for (int i = 0; i < images.length; i++) {
+                // image must be png or jpg
+                String originalImageName = images[i].getOriginalFilename();
+                if (originalImageName == null) {
+                    throw new RuntimeException("At least one image name is null");
                 }
-                path = Paths.get(basePath, fileName);
-                imageLocationEntity.setUrl("/" + baseUrl + "/" + fileName);
-                imageList.add(imageLocationEntity);
-                storageService.store(images[i], path);
-            } catch (Exception e) {
-                throw new RuntimeException("Image upload fail!");
-            }
 
+                try {
+                    log.error(originalImageName);
+                    String fileName;
+                    ImageLocationEntity imageLocationEntity = new ImageLocationEntity();
+                    if (originalImageName.endsWith(".jpg")) {
+                        fileName = postIdStr + "_" + i + ".jpg";
+                    } else if (originalImageName.endsWith(".png")) {
+                        fileName = postIdStr + "_" + i + ".png";
+                    } else {
+                        throw new RuntimeException();
+                    }
+                    imageLocationEntity.setUrl(fileName);
+                    imageList.add(imageLocationEntity);
+                    storageService.store(images[i], fileName);
+                } catch (Exception e) {
+                    postService.deleteAPost(postEntity.getId());
+                    throw new RuntimeException("Image upload fail!");
+                }
+
+            }
         }
+
+        appUserEntity.getPostEntities().add(postEntity);
 
         log.info("Add post: {} to user: {}", postEntity.getTitle(), appUserEntity.getUsername());
         return postEntity;
@@ -288,7 +297,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
      * @return List of all post of that user
      */
     @Override
-    public List<PostEntity> getSavedPost(Long userId, String tokenUsername) {
+    public List<PostEntity> getSavedPosts(Long userId, String tokenUsername) {
         AppUserEntity appUserEntity = getUserById(userId);
 
         checkTokenUser(appUserEntity.getUsername(), tokenUsername);
@@ -303,7 +312,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         checkTokenUser(appUserEntity.getUsername(), tokenUsername);
 
         PostEntity postEntity = postService.getPostById(postId);
+
+        for (PostEntity saved : appUserEntity.getSaved()) {
+            if (saved.getId().equals(postEntity.getId())) {
+                throw new RuntimeException("Already saved");
+            }
+        }
+
         appUserEntity.getSaved().add(postEntity);
+        postEntity.getLiked().add(appUserEntity);
     }
 
     @Override
@@ -313,12 +330,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         checkTokenUser(appUserEntity.getUsername(), tokenUsername);
 
         PostEntity toRemove = postService.getPostById(postId);
-
-        try {
-            appUserEntity.getSaved().remove(toRemove);
-        } catch (Exception e) {
-            throw new RuntimeException("The post is not in the saved list!");
-        }
+        appUserEntity.getSaved().remove(toRemove);
+        toRemove.getLiked().remove(appUserEntity);
     }
 
     /**
@@ -337,8 +350,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public List<CommentEntity> leaveACommentSection(Long postId, Long userId, String comment) {
+    public List<CommentEntity> leaveACommentSection(Long postId, Long userId, String comment, String tokenUsername) {
         AppUserEntity appUserEntity = getUserById(userId);
+
+        checkTokenUser(appUserEntity.getUsername(), tokenUsername);
 
         PostEntity postEntity = postService.getPostById(postId);
 
@@ -348,6 +363,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         newComment.setComment(comment);
 
         newComment.setUser(appUserEntity);
+        newComment.setPostedTime(new Date());
 
         newCommentSectionEntity.getComments().add(newComment);
         postEntity.getCommentEntityList().add(newCommentSectionEntity);
@@ -357,8 +373,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public CommentEntity addAComment(Long commentId, Long userId, String comment) {
+    public CommentEntity addAComment(Long commentId, Long userId, String comment, String tokenUsername) {
         AppUserEntity appUserEntity = getUserById(userId);
+
+        checkTokenUser(appUserEntity.getUsername(), tokenUsername);
 
         CommentEntity commentEntitySection = commentService.getCommentSectionById(commentId);
 
@@ -372,8 +390,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public void deleteAComment(Long userId, Long commentSectionId, Long commentContentId) {
+    public void deleteAComment(Long userId, Long commentSectionId, Long commentContentId, String tokenUsername) {
         AppUserEntity appUserEntity = getUserById(userId);
+
+        checkTokenUser(appUserEntity.getUsername(), tokenUsername);
 
         commentService.deleteAComment(commentContentId);
         CommentEntity commentEntitySection = commentService.getCommentSectionById(commentSectionId);

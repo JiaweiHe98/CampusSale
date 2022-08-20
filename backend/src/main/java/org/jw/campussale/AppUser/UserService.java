@@ -5,11 +5,12 @@ import org.jw.campussale.Post.PostEntity;
 import org.jw.campussale.Post.PostMessageText;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
 import java.util.List;
 
 public interface UserService {
     boolean checkExistsByUsername(String username);
+
+    void logout(String username);
 
     void runtimeExceptionIfExistsByUsername(String username, String methodName);
 
@@ -33,7 +34,7 @@ public interface UserService {
 
 //    Post addAnImageToPost(Long userId, Long postId, image?)
 
-    List<PostEntity> getSavedPost(Long userId, String tokenUsername);
+    List<PostEntity> getSavedPosts(Long userId, String tokenUsername);
 
     void addToSavedList(Long userId, Long postId, String tokenUsername);
 
@@ -41,11 +42,11 @@ public interface UserService {
 
     AppUserEntity deleteUser(Long userId);
 
-    List<CommentEntity> leaveACommentSection(Long postId, Long userId, String comment);
+    List<CommentEntity> leaveACommentSection(Long postId, Long userId, String comment, String tokenUsername);
 
-    CommentEntity addAComment(Long commentId, Long userId, String comment);
+    CommentEntity addAComment(Long commentId, Long userId, String comment, String tokenUsername);
 
-    void deleteAComment(Long userId, Long commentSectionId, Long commentContentId);
+    void deleteAComment(Long userId, Long commentSectionId, Long commentContentId, String tokenUsername);
 
     String getToken(String username);
 

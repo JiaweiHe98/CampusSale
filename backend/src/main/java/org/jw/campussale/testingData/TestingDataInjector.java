@@ -1,14 +1,17 @@
 package org.jw.campussale.testingData;
 
 import lombok.RequiredArgsConstructor;
+import org.jw.campussale.Comment.CommentEntity;
+import org.jw.campussale.Post.PostEntity;
 import org.jw.campussale.Post.PostMessageText;
 import org.jw.campussale.enums.Category;
 import org.jw.campussale.AppUser.AppUserEntity;
-import org.jw.campussale.Post.PostEntity;
 import org.jw.campussale.SignUp.SignUpService;
 import org.jw.campussale.AppUser.UserService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -56,8 +59,22 @@ public class TestingDataInjector {
         postMessageText2.setDescription("Textbook for calc 1");
         postMessageText2.setPrice(180.00);
 
-        userService.addAPost(appUserEntity.getId(), postMessageText, new MultipartFile[]{}, appUserEntity.getUsername());
-        userService.addAPost(appUserEntity2.getId(), postMessageText2, new MultipartFile[]{}, appUserEntity2.getUsername());
+        PostEntity postEntity = userService.addAPost(appUserEntity.getId(), postMessageText, new MultipartFile[]{}, appUserEntity.getUsername());
+        PostEntity postEntity2 = userService.addAPost(appUserEntity2.getId(), postMessageText2, new MultipartFile[]{}, appUserEntity2.getUsername());
+
+        userService.addToSavedList(appUserEntity2.getId(), postEntity2.getId(), appUserEntity2.getUsername());
+        userService.addToSavedList(appUserEntity.getId(), postEntity.getId(), appUserEntity.getUsername());
+        userService.addToSavedList(appUserEntity.getId(), postEntity2.getId(), appUserEntity.getUsername());
+
+        List<CommentEntity> commentSections = userService.leaveACommentSection(postEntity.getId(), appUserEntity.getId(), "this is a comment", appUserEntity.getUsername());
+        userService.leaveACommentSection(postEntity.getId(), appUserEntity.getId(), "this is another comment", appUserEntity.getUsername());
+
+        userService.addAComment(commentSections.get(0).getId(), appUserEntity2.getId(), "user 2 is commenting", appUserEntity2.getUsername());
+
+
+
+
+
     }
 
 }

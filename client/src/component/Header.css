@@ -16,6 +16,11 @@
   text-decoration: none;
 }
 
+#logout:hover {
+  color: #2c2c2c;
+  background-color: rgba(239, 35, 60, 0.2);
+}
+
 .header a:hover {
   color: #0069c2;
   background-color: #0085f230;

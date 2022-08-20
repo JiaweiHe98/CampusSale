@@ -9,7 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.Principal;
 
 public interface UserController {
-    ResponseEntity<?> getUserBasicByUsername(@RequestParam String username);
+
+    ResponseEntity<?> getUserByUsername(@RequestParam String username);
+
+    ResponseEntity<?> getUserById(@RequestParam Long userId);
+
+    ResponseEntity<?> logout(Principal principal);
 
     ResponseEntity<?> updateUserInfo(@RequestBody AppUserMessage userFromClient, Principal principal);
 
@@ -26,10 +31,12 @@ public interface UserController {
 
     ResponseEntity<?> removeFromSaved(@RequestParam Long userId, @RequestParam Long postId, Principal principal);
 
-    ResponseEntity<?> getUserSavedPostIds(@RequestParam Long userId);
+    ResponseEntity<?> getUserSavedPost(@RequestParam Long userId);
 
     ResponseEntity<?> getUserPosts(@RequestParam Long userId);
 
-    ResponseEntity<?> deleteComment(@RequestParam Long userId, @RequestParam Long commentSectionId, @RequestParam Long commentId);
+    ResponseEntity<?> addACommentSection(@RequestParam Long userId, @RequestParam Long postId, @RequestParam String comment, Principal principal);
+
+    ResponseEntity<?> deleteComment(@RequestParam Long userId, @RequestParam Long commentSectionId, @RequestParam Long commentId, Principal principal);
 
 }

@@ -2,6 +2,7 @@ package org.jw.campussale.Role.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jw.campussale.AppUser.AppUserEntity;
 import org.jw.campussale.Role.RoleEntity;
 import org.jw.campussale.Role.RoleRepository;
 import org.jw.campussale.enums.RoleType;
@@ -54,5 +55,10 @@ public class RoleServiceImpl implements RoleService {
         }
 
         return roleEntity;
+    }
+
+    public void addUserToRole(RoleType roleType, AppUserEntity appUserEntity) {
+        RoleEntity roleEntity = getByRoleType(roleType);
+        roleEntity.getUsers().add(appUserEntity);
     }
 }

@@ -17,8 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
-import static org.springframework.http.HttpMethod.GET;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -38,15 +36,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(), userService);
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
 
-
         http.csrf().disable();
-        http.cors().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().antMatchers("/api/login**").permitAll().and()
-                .authorizeRequests().antMatchers("/api/signup**").permitAll().and()
-                .authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN");
-        http.authorizeRequests().anyRequest().authenticated();
-//        http.authorizeRequests().anyRequest().permitAll();
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+//        http.authorizeRequests().antMatchers(GET, "/**/").permitAll();
+//        http.authorizeRequests().antMatchers(GET, "/static/**").permitAll();
+//        http.authorizeRequests().antMatchers("/api/user/user").permitAll();
+//        http.authorizeRequests().antMatchers(GET,"/api/post/post").permitAll();
+//        http.authorizeRequests().antMatchers("/api/login/**").permitAll();
+//        http.authorizeRequests().antMatchers("/api/signup/**").permitAll();
+
+//        http.authorizeRequests().antMatchers(PUT, "/api/user/logout").hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN");
+//        http.authorizeRequests().antMatchers(POST, "/api/user/post").hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN");
+//        http.authorizeRequests().antMatchers(PUT, "/api/user/post").hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN");
+//        http.authorizeRequests().antMatchers(DELETE, "/api/user/post").hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN");
+//        http.authorizeRequests().anyRequest().authenticated();
+        http.authorizeRequests().anyRequest().permitAll();
 
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(userService), UsernamePasswordAuthenticationFilter.class);

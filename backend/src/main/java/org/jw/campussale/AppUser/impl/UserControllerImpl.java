@@ -15,30 +15,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Slf4j
+@CrossOrigin(origins = "*")
 public class UserControllerImpl implements UserController {
 
     private final UserService userService;
     private final ValidationService validationService;
 
-    @GetMapping("/path")
-    public String forTest() {
-        Path path = Paths.get("images", "123.png");
-        return path.toAbsolutePath().toString();
-    }
+//    @GetMapping("/path")
+//    public String forTest(Principal principal) {
+//        return principal.getName();
+//    }
+
+
 
     /**
      * 1. Used in user login (get the AppUser object from the username)
@@ -51,7 +50,7 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @GetMapping("/user")
-    public ResponseEntity<?> getUserBasicByUsername(@RequestParam String username) {
+    public ResponseEntity<?> getUserByUsername(@RequestParam String username) {
         try {
             // Edge case 2
             if (username == null) {
@@ -62,6 +61,33 @@ public class UserControllerImpl implements UserController {
             AppUserEntity appUserEntity = userService.getUser(username);
 
             return ResponseEntity.ok().body(appUserEntity);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @Override
+    @GetMapping("/userid")
+    public ResponseEntity<?> getUserById(@RequestParam Long userId) {
+        try {
+            if (userId == null) {
+                throw new RuntimeException("Key field is null!");
+            }
+
+            AppUserEntity appUserEntity = userService.getUserById(userId);
+
+            return ResponseEntity.ok().body(appUserEntity);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @Override
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(Principal principal) {
+        try {
+            userService.logout(principal.getName());
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -131,7 +157,7 @@ public class UserControllerImpl implements UserController {
      * @param title       - title (length >= 1)
      * @param description - can be null
      * @param price       - >= 0
-     * @param images      - can be empty
+     * @param files       - can be empty
      * @param principal   - for authorization
      * @return new post
      */
@@ -139,9 +165,13 @@ public class UserControllerImpl implements UserController {
     @PostMapping("/post")
     public ResponseEntity<?> addAPost(@RequestParam Long userId, @RequestParam String category,
                                       @RequestParam String title, @RequestParam String description,
-                                      @RequestParam Double price, @RequestParam MultipartFile[] images,
+                                      @RequestParam Double price, @RequestParam(required = false) MultipartFile[] files,
                                       Principal principal) {
         try {
+            if (principal == null) {
+                throw new RuntimeException("Token is not valid!");
+            }
+
             if (userId == null
                     || category == null
                     || title == null
@@ -158,7 +188,7 @@ public class UserControllerImpl implements UserController {
             }
 
             Category categoryEnum = switch (category) {
-                case "TEXTBOOK" -> Category.TEXTBOOKS;
+                case "TEXTBOOKS" -> Category.TEXTBOOKS;
                 case "BOOKS" -> Category.BOOKS;
                 case "ELECTRONICS" -> Category.ELECTRONICS;
                 case "FURNITURE" -> Category.FURNITURE;
@@ -169,9 +199,9 @@ public class UserControllerImpl implements UserController {
 
             PostMessageText postMessageText = new PostMessageText(userId, categoryEnum, title, description, price);
 
-            PostEntity posted = userService.addAPost(userId, postMessageText, images, principal.getName());
+            PostEntity addedPost = userService.addAPost(userId, postMessageText, files, principal.getName());
             URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/user/post").toString());
-            return ResponseEntity.created(uri).body(posted);
+            return ResponseEntity.created(uri).body(addedPost);
         } catch (Exception e) {
             if (e.getMessage().equals("Unauthorized!")) {
                 return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.UNAUTHORIZED);
@@ -229,6 +259,24 @@ public class UserControllerImpl implements UserController {
         }
     }
 
+    // List
+    @Override
+    @GetMapping("/saved")
+    public ResponseEntity<?> getUserSavedPost(@RequestParam Long userId) {
+        try {
+            if (userId == null) {
+                throw new RuntimeException("Key field is null!");
+            }
+
+            AppUserEntity appUserEntity = userService.getUserById(userId);
+            List<PostEntity> savedPost = appUserEntity.getSaved();
+
+            return ResponseEntity.ok().body(savedPost);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     // OK
     @Override
     @PutMapping("/saved")
@@ -262,26 +310,8 @@ public class UserControllerImpl implements UserController {
     }
 
 
-    // List<postId>
+    // List
     @Override
-    @GetMapping("/saved")
-    public ResponseEntity<?> getUserSavedPostIds(@RequestParam Long userId) {
-        try {
-            if (userId == null) {
-                throw new RuntimeException("Key field is null!");
-            }
-
-            AppUserEntity appUserEntity = userService.getUserById(userId);
-            List<Long> savedPostIds = appUserEntity.getSaved().stream().map(PostEntity::getId).toList();
-
-            return ResponseEntity.ok().body(savedPostIds);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
-    }
-
-
-    // List<userId>
     @GetMapping("/posts")
     public ResponseEntity<?> getUserPosts(@RequestParam Long userId) {
         try {
@@ -290,8 +320,21 @@ public class UserControllerImpl implements UserController {
             }
 
             AppUserEntity appUserEntity = userService.getUserById(userId);
-            List<Long> postedPostIds = appUserEntity.getPostEntities().stream().map(PostEntity::getId).toList();
+            List<PostEntity> postedPostIds = appUserEntity.getPostEntities();
             return ResponseEntity.ok().body(postedPostIds);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @Override
+    @GetMapping("/comment")
+    public ResponseEntity<?> addACommentSection(@RequestParam Long userId, @RequestParam Long postId, @RequestParam String comment, Principal principal) {
+        try {
+            if (userId == null || postId == null || comment == null) {
+                throw new RuntimeException("Key field is null!");
+            }
+            return ResponseEntity.ok().body(userService.leaveACommentSection(postId, userId, comment, principal.getName()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -299,13 +342,14 @@ public class UserControllerImpl implements UserController {
 
     @DeleteMapping("/comment")
     @Override
-    public ResponseEntity<?> deleteComment(@RequestParam Long userId, @RequestParam Long commentSectionId, @RequestParam Long commentId) {
+    public ResponseEntity<?> deleteComment(@RequestParam Long userId, @RequestParam Long commentSectionId, @RequestParam Long commentId, Principal principal) {
         try {
+            log.error("called");
             if (userId == null || commentId == null) {
                 throw new RuntimeException("Key field is null!");
             }
 
-            userService.deleteAComment(userId, commentSectionId, commentId);
+            userService.deleteAComment(userId, commentSectionId, commentId, principal.getName());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
